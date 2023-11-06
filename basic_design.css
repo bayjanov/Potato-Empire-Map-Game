@@ -1,0 +1,140 @@
+
+/* Basic design CSS */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.game-title {
+    margin-top: 20px; /* More top margin as specified */
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+}
+
+.left-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.map-container {
+    background-color: #fff; /* White background for the map container */
+    padding: 10px;
+    border-radius: 8px; /* Gently rounded edges for the container */
+}
+
+/* Placeholder for 11x11 grid cells */
+.map-container::before {
+    content: '11x11 grid goes here';
+}
+
+.right-panel {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.seasons-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.season {
+    border-radius: 8px; /* Rounded edges for season boxes */
+    padding: 10px;
+    margin-bottom: 10px;
+    color: #fff; /* White text for season names and points */
+}
+
+.season.spring { background-color: #69BE6C; }
+.season.summer { background-color: #FEE874; }
+.season.autumn { background-color: #EABD94; }
+.season.winter { background-color: #59D2EC; }
+
+.total-points h2 {
+    margin-top: 0;
+}
+
+.current-season-info {
+    margin-top: 48px; /* Margin from top as specified */
+}
+
+.current-season-info h3 {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.divider {
+    border: none;
+    height: 1px;
+    background-color: black;
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+.missions-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.mission {
+    border-radius: 8px;
+    background-color: #363636; /* Black background for mission blocks */
+    color: #fff; /* White text for mission details */
+    padding: 10px;
+}
+
+.elapsed-time {
+    margin-bottom: 20px;
+}
+
+.element-controls {
+    display: flex;
+    flex-direction: column;
+}
+
+.control-button {
+    background-color: #fff; /* White background for buttons */
+    border: 2px solid black;
+    border-radius: 8px; /* 10% rounded edges for buttons */
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.element-display {
+    border: 2px solid black;
+    border-radius: 8px;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #fff; /* Full white background for the element grid */
+}
+
+.time-cost {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
