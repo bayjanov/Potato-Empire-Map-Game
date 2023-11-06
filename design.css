@@ -38,6 +38,13 @@ body, html {
 	margin-left: 32px;
 }
 
+.main-grid-wapper {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
 .grid-container {
 	display: grid;
 	grid-template-columns: repeat(11, 20px);     /* Adjust 20px to your desired cell width */
@@ -46,8 +53,10 @@ body, html {
 	padding: 10px;
 	border-radius: 5px;
 	margin: 32px;
-	width: 850px;     /* Adjust this to set a fixed width if needed */
-	height: 850px;
+	width: 700px;     /* Adjust this to set a fixed width if needed */
+	height: 700px;
+	grid-template-columns: repeat(11, 1fr);
+
 }
 
 .grid-cell {
@@ -256,11 +265,4 @@ hr {
 	height: 0;
 	padding-bottom: 100%;
 	position: relative;     /* To position content within cells */
-}
-
-
-
-.grid-container {
-	display: grid;
-	grid-template-columns: repeat(11, 1fr);
 }
