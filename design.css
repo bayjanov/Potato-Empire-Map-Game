@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Montserrat:wght@100;200;300;400;500;600;700&family=Roboto+Mono:wght@300;400;500;600;700&display=swap');
+
 /* Basic reset */
 * {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	font-family: 'Meriweather', serif;
 }
 
 body, html {
@@ -149,6 +152,34 @@ hr {
 	grid-template-rows: repeat(2, 1fr);
 }
 
+.mission-block {
+	display: flex;
+	flex-direction: column;
+	border-radius: 20px;
+	background-color: #363636;
+	color: white;
+	padding: 4px 0;
+}
+
+.mission-status {
+	padding: 0 10px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.missionPoints {
+	font-size: 16px;
+	margin-left: 24px;
+}
+
+.mission-letter {
+	font-size: 20px;
+	font-weight: bold;
+	margin-right: 10px;
+}
+
+
 .mission-image {
 	width: 100%;
 	height: 100%;
@@ -156,10 +187,21 @@ hr {
 	margin-right: 10px;
 }
 
+
 .mission-details {
 	padding: 10px;
 	width: 66.666%;
 }
+
+.passive-circle {
+	opacity: 0.0;
+}
+
+.active-circle {
+	opacity: 1.0;
+}
+
+
 
 .elapsed-time {
 	font-size: 18px;
@@ -260,7 +302,7 @@ hr {
 	font-size: 18px;
 }
 
-.grid-container div, .mission-grid div {
+.grid-container div {
 	width: 100%;
 	height: 0;
 	padding-bottom: 100%;
