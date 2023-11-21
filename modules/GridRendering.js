@@ -1,19 +1,14 @@
-import { currentTimeUnits, updateElapsedTime } from './ElapsedTime.js';
-import { getColorForType } from './Utility.js'; // Assuming getColorForType is exported from Utility.js
+import { selectedMissions } from "./Mission.js";
+import { checkSeasonEnd } from "./Seasons.js";
+import { getImageForType } from "./Utils.js";
+import {  checkEndOfGame } from "./GameControl.js";
+import { mountainCells, shuffledElements, currentElement, currentTimeUnits, maxTimeUnits, } from "./GameState.js";
 
 
-// Mountain cells are marked as reserved and cannot be used for placing elements
-const mountainCells = [
-    { x: 1, y: 1 },
-    { x: 8, y: 3 },
-    { x: 3, y: 5 },
-    { x: 9, y: 8 },
-    { x: 5, y: 9 },
-  ];
-
+// ================================== GRID RENDERING FUNCTIONS ============================================
 
 // Renders the 11x11 main grid
-function renderMainGrid() {
+export function renderMainGrid() {
     const grid = document.getElementById("mapGrid");
     grid.innerHTML = ""; // Clear any existing cells
   
@@ -41,8 +36,87 @@ function renderMainGrid() {
     }
   }
   
+  
+  // Renders the current element in the 3x3 grid
+export function renderElementGrid(element) {
+    const elementGrid = document.getElementById("elementGrid");
+    elementGrid.innerHTML = ""; // Clear any existing cells
+  
+    for (let i = 0; i < 3; i++) {
+      // Assuming a 3x3 grid
+      for (let j = 0; j < 3; j++) {
+        const gridCell = document.createElement("div");
+        gridCell.classList.add("element-cell");
+        gridCell.dataset.x = j;
+        gridCell.dataset.y = i;
+  
+        if (element.shape[i][j] === 1) {
+          if (element.type === "forest") {
+            gridCell.classList.add("filled");
+            gridCell.style.backgroundImage =
+              "url('./assets/tiles/forest_tile.png')";
+          } else if (element.type === "farm") {
+            gridCell.classList.add("filled");
+            gridCell.style.backgroundImage =
+              "url('./assets/tiles/farm_tile.png')";
+          } else if (element.type === "water") {
+            gridCell.classList.add("filled");
+            gridCell.style.backgroundImage =
+              "url('./assets/tiles/water_tile.png')";
+          } else if (element.type === "village") {
+            gridCell.classList.add("filled");
+            gridCell.style.backgroundImage =
+              "url('./assets/tiles/village_tile.png')";
+          }
+          gridCell.style.border = "1px solid #fff";
+        } else {
+          gridCell.classList.add("empty");
+          gridCell.style.backgroundColor = `#fff`;
+          gridCell.style.border = "none";
+        }
+        elementGrid.appendChild(gridCell);
+      }
+    }
+  }
+  
+  
+  
+  
+  
+  
+  // =============== ELEMENT MANIPULATION ======================
+  
+  // Rotates the current element
+  export  function rotateElement(element) {
+    const newShape = element.shape[0].map((val, index) =>
+      element.shape.map((row) => row[index]).reverse()
+    );
+    element.shape = newShape;
+    renderElementGrid(element);
+  }
+  
+  // Mirrors the current element
+  export function mirrorElement(element) {
+    element.shape.forEach((row) => row.reverse());
+    renderElementGrid(element);
+  }
+  
+  //  ====== TIME STATUS UPDATE ======
+
+  export function updateTimeCost() {
+    // Update the displayed time cost of the current element next to clock icon
+    document.getElementById("timeCost").textContent = currentElement.time;
+  }
+  
+  
+  
+  
+  
+  // ================ GRID ELEMENT PLACING ======================
+  
+  
   // Handles the click event on the main grid to place an element
-function handleCellClick(event) {
+  export function handleCellClick(event) {
     const x = parseInt(event.target.dataset.x, 10);
     const y = parseInt(event.target.dataset.y, 10);
   
@@ -54,7 +128,7 @@ function handleCellClick(event) {
   }
   
   // Finds the top-left filled cell in the element's shape
-  function findTopLeftFilledCell(element) {
+  export function findTopLeftFilledCell(element) {
     for (let i = 0; i < element.shape.length; i++) {
       for (let j = 0; j < element.shape[i].length; j++) {
         if (element.shape[i][j] === 1) {
@@ -66,7 +140,7 @@ function handleCellClick(event) {
   }
   
   // Places an element on the main grid at the specified coordinates
-  function placeElement(x, y, element) {
+  export function placeElement(x, y, element) {
     const grid = document.getElementById("mapGrid");
     const cells = grid.getElementsByClassName("grid-cell");
   
@@ -118,10 +192,10 @@ function handleCellClick(event) {
             }
           }
         });
-        currentTimeUnits += element.time;
-        document.getElementById(
-          "elapsedTime"
-        ).textContent = `${currentTimeUnits}/${maxTimeUnits}`;
+        //   currentTimeUnits += element.time;
+        //   document.getElementById(
+        //     "elapsedTime"
+        //   ).textContent = `${currentTimeUnits}/${maxTimeUnits}`;
       });
   
       // Remove temporary styles after a delay
@@ -142,7 +216,7 @@ function handleCellClick(event) {
             if (targetCellIndex >= 0 && targetCellIndex < cells.length) {
               const targetCell = cells[targetCellIndex];
               if (targetCell) {
-                targetCell.style.backgroundImage = `url(${getColorForType(
+                targetCell.style.backgroundImage = `url(${getImageForType(
                   element.type
                 )})`;
                 targetCell.style.backgroundSize = "cover";
@@ -162,40 +236,44 @@ function handleCellClick(event) {
         console.log("All elements have been placed.");
         // Implement end-of-game or next level logic here
       }
+  
+      // After placing the element, update the time units
+      currentTimeUnits += element.time;
+      document.getElementById(
+        "elapsedTime"
+      ).textContent = `${currentTimeUnits}/${maxTimeUnits}`;
+      
     }
-    // After placing the element, update the time units
-    currentTimeUnits += element.time;
-    document.getElementById(
-      "elapsedTime"
-    ).textContent = `${currentTimeUnits}/${maxTimeUnits}`;
+  
+    // DEBUGGING 
+    // Update the points for each mission
+    selectedMissions.forEach((mission) => {
+      if (mission.isActive) {
+          // console.log(`Active mission ${mission.id} score: ${mission.calculateScore()}`);
+          // console.log(`${mission.title}'s index is ${selectedMissions.indexOf(mission)}`);
+          // update the points for the mission with class .mission-points-{missionIndex}
+          document.querySelector(`.mission-points-${selectedMissions.indexOf(mission)}`).textContent = `(${mission.calculateScore()} points)`;
+          }
+      });
   
     // Check if the season or the game should end
+    //   console.log(`===========================================`);
+      console.log(`Current element type: ${currentElement.type}`);
+    //   console.log(`Current element time:  ${currentElement.time}`);
+    //   console.log(`Current element shape: ${currentElement.shape[0]}`);
+    //   console.log(`Current element shape: ${currentElement.shape[1]}`);
+    //   console.log(`Current element shape: ${currentElement.shape[2]}`);
+    //   console.log(`===========================================`);
+    //   console.log(`Current Time Units ${currentTimeUnits}`);
+  
+    updateTimeCost();
     checkSeasonEnd();
     checkEndOfGame();
-  }
   
-  function checkSeasonEnd() {
-    if (currentTimeUnits >= (currentSeasonIndex + 1) * 7) {
-      // Season has ended, calculate the score for the season
-      let seasonName = seasons[currentSeasonIndex];
-      seasonScores[seasonName] = calculateSeasonScore(seasonName);
-      // Update the season score on the UI
-      document.querySelector(
-        `.season.${seasonName.toLowerCase()} .points`
-      ).textContent = `${seasonScores[seasonName]} points`;
-  
-      // Move to the next season
-      currentSeasonIndex++;
-      if (currentSeasonIndex >= seasons.length) {
-        currentSeasonIndex = 0; // Loop back to the first season if needed
-      }
-      // Update the season display
-      updateSeasonDisplay();
-    }
+    //   console.log(`grid: ${grid}`);
+    //   console.log(`cells: ${cells}`);
   }
 
+  
 
-  export { mountainCells, renderMainGrid, handleCellClick, placeElement, findTopLeftFilledCell };
-
-
-
+// END OF PLACE ELEMENT FUNCTION

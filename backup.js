@@ -391,33 +391,31 @@ const missions = [
       if (!this.isActive) {
         return 0;
       }
-
-      let maxForestLineLength = 0;
+    
+      let maxVillageLineLength = 0;
       const grid = document.getElementById("mapGrid");
       const cells = grid.getElementsByClassName("grid-cell");
-
+    
       for (let row = 0; row < 11; row++) {
-        let currentForestLineLength = 0;
-
+        let currentVillageLineLength = 0;
+    
         for (let col = 0; col < 11; col++) {
           const cell = cells[row * 11 + col];
-          if (
-            cell.style.backgroundImage ===
-            `url("${getImageForType("village")}")`
-          ) {
-            currentForestLineLength++;
-            maxForestLineLength = Math.max(
-              maxForestLineLength,
-              currentForestLineLength
-            );
+          if (cell.style.backgroundImage === `url("${getImageForType("village")}")`) {
+            currentVillageLineLength++;
           } else {
-            currentForestLineLength = 0;
+            // Check if the current line length is the maximum and reset it
+            maxVillageLineLength = Math.max(maxVillageLineLength, currentVillageLineLength);
+            currentVillageLineLength = 0;
           }
         }
+        // Check at the end of the row as well
+        maxVillageLineLength = Math.max(maxVillageLineLength, currentVillageLineLength);
       }
-
-      return maxForestLineLength * 2;
+    
+      return maxVillageLineLength * 2;
     },
+    
   },
   {
     isActive: false,
@@ -1170,7 +1168,40 @@ function initializeGame() {
 
 //  ============================== SEASON FUNCTIONS ====================================
 
+function checkSeasonEnd() {
+  if (currentTimeUnits >= (currentSeasonIndex + 1) * 7) {
+    // Season has ended, calculate the score for the season
+    let seasonName = seasons[currentSeasonIndex];
+    seasonScores[seasonName] = calculateSeasonScore(seasonName);
+    // Update the season score on the UI
+    document.querySelector(
+      `.season.${seasonName.toLowerCase()} .points-${seasonName.toLowerCase()}`
+    ).textContent = `${seasonScores[seasonName]} points`;
+    // Add up the total score
+    let totalScore = calculateFinalScore();
+    document.querySelector(".totalPoints").textContent = `${totalScore} points`;
 
+    // Move to the next season
+    currentSeasonIndex++;
+    if (currentSeasonIndex >= seasons.length) {
+      currentSeasonIndex = 0; // Loop back to the first season if needed
+    }
+
+    // DEBUGGING
+    selectedMissions.forEach((mission) => {
+      if (mission.isActive) {
+        console.log(
+          `Active mission in ${seasonName}:  ${
+            mission.id
+          } score: ${mission.calculateScore()}`
+        );
+      }
+    });
+
+    // Update the season display
+    updateSeasonDisplay();
+  }
+}
 
 function updateSeasonDisplay() {
   const seasonName = seasons[currentSeasonIndex];
@@ -1223,18 +1254,45 @@ function updateSeasonDisplay() {
 
 let previousSeasonScore = 0; // Initialize at the start of the game
 
+// function calculateSeasonScore(season) {
+//   let seasonScore = 0;
+
+//   selectedMissions.forEach((mission, index) => {
+//       if (mission.isActive && mission.seasons.includes(season)) {
+//           seasonScore += mission.calculateScore();
+//           console.log(`Season ${season}: Mission ${mission.id} score: ${mission.calculateScore()}`);
+//       }
+//   });
+
+//   return seasonScore;
+// }
+
+
 function calculateSeasonScore(season) {
-    let seasonScore = 0;
+  let seasonScore = 0;
+  let missionIndices = getActiveMissionIndicesForSeason(season);
 
-    selectedMissions.forEach((mission, index) => {
-        if (mission.isActive && mission.seasons.includes(season)) {
-          
-            seasonScore += mission.calculateScore();
-            console.log(`Season ${season}: Mission ${mission.id} score: ${mission.calculateScore()}`);
-        }
-    });
+  missionIndices.forEach(index => {
+    let missionId = selectedMissions[index].id;
+    let missionScore = missionScores[missionId];
+    seasonScore += missionScore;
+    // Reset the score for the mission that will be counted in the next season
+    if (season !== 'Winter' || index !== 3) { // Do not reset for the last mission in Winter
+      missionScores[missionId] = 0;
+    }
+  });
 
-    return seasonScore;
+  return seasonScore;
+}
+
+function getActiveMissionIndicesForSeason(season) {
+  switch (season) {
+    case "Spring": return [0, 1];
+    case "Summer": return [1, 2];
+    case "Autumn": return [2, 3];
+    case "Winter": return [3, 0];
+    default: return [];
+  }
 }
 
 
@@ -1247,62 +1305,6 @@ function calculateTotalScore() {
 
 function calculateFinalScore() {
   return calculateTotalScore(); // Final score is the total score at the end
-}
-
-
-function calculateFinalScore() {
-  let totalScore = 0;
-  selectedMissions.forEach((mission) => {
-    totalScore += mission.calculateScore(); // Add each mission's score to the total
-  });
-  return totalScore; // Return the cumulative total
-}
-
-
-function checkEndOfGame() {
-  console.log("Checking end of game", currentTimeUnits, maxTimeUnits);
-  if (currentTimeUnits >= maxTimeUnits) {
-    // Game over
-    alert("Game Over! Your final score is: " + calculateFinalScore());
-    // disable game board, show results
-    document.getElementById("mapGrid").style.pointerEvents = "none";
-    document.getElementsByClassName("totalPoints").style.display = "block";
-  }
-}
-
-function checkSeasonEnd() {
-  if (currentTimeUnits >= (currentSeasonIndex + 1) * 7) {
-    // Season has ended, calculate the score for the season
-    let seasonName = seasons[currentSeasonIndex];
-    seasonScores[seasonName] = calculateSeasonScore(seasonName);
-    // Update the season score on the UI
-    document.querySelector(
-      `.season.${seasonName.toLowerCase()} .points-${seasonName.toLowerCase()}`
-    ).textContent = `${seasonScores[seasonName]} points`;
-    // Add up the total score
-    let totalScore = calculateFinalScore();
-    document.querySelector(".totalPoints").textContent = `${totalScore} points`;
-
-    // Move to the next season
-    currentSeasonIndex++;
-    if (currentSeasonIndex >= seasons.length) {
-      currentSeasonIndex = 0; // Loop back to the first season if needed
-    }
-
-    // DEBUGGING
-    selectedMissions.forEach((mission) => {
-      if (mission.isActive) {
-        console.log(
-          `Active mission in ${seasonName}:  ${
-            mission.id
-          } score: ${mission.calculateScore()}`
-        );
-      }
-    });
-
-    // Update the season display
-    updateSeasonDisplay();
-  }
 }
 
 // function calculateSeasonScore(currentSeason) {
@@ -1397,6 +1399,24 @@ function updateTimeCost() {
   document.getElementById("timeCost").textContent = currentElement.time;
 }
 
+function checkEndOfGame() {
+  console.log("Checking end of game", currentTimeUnits, maxTimeUnits);
+  if (currentTimeUnits >= maxTimeUnits) {
+    // Game over
+    alert("Game Over! Your final score is: " + calculateFinalScore());
+    // disable game board, show results
+    document.getElementById("mapGrid").style.pointerEvents = "none";
+    document.getElementsByClassName("totalPoints").style.display = "block";
+  }
+}
+
+function calculateFinalScore() {
+  let totalScore = 0;
+  selectedMissions.forEach((mission) => {
+    totalScore += mission.calculateScore(); // Add each mission's score to the total
+  });
+  return totalScore; // Return the cumulative total
+}
 
 // function calculateFinalScore() {
 //   let totalScore = 0;
